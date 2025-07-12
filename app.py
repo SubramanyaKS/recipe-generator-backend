@@ -32,9 +32,37 @@ class PromptRequest(BaseModel):
     """
     prompt: str
 
+class RecipeRequest(BaseModel):
+    """
+    Pydantic model for the recipe request.
+    """
+    ingredients: str
+    cuisine: str
+
 @app.get('/')
 async def read_root():
     return {"message": "Welcome to the Gemini API Caller. Use /generate to interact with Gemini."}
+
+
+@app.post("/api/recipe-generate")
+async def generate_recipe_endpoint(request: RecipeRequest):
+    """
+    Endpoint to generate text using the Gemini API.
+
+    Args:
+        request (RecipeRequest): The request body containing the prompt.
+
+    Returns:
+        response: A string containing the generated text.
+    """
+    try:
+        prompt =request.ingredients + "\n" + request.cuisine
+        print(f"Received ingredients: {request.ingredients}")
+        response = geminiCall(prompt)
+        print(f"Generated recipe: {response}"   )
+        return {"recipe": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error calling Gemini API: {e}")
 
 
 @app.post("/api/generate-recipe")
