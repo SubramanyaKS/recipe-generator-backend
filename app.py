@@ -1,9 +1,11 @@
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
-
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from services import config
 from services.api_service import geminiCall
 from utils.environment import PORT
@@ -26,6 +28,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, lambda request, exc: JSONResponse(
+    status_code=429,
+    content={"detail": "Rate limit exceeded"}
+))
+
 class PromptRequest(BaseModel):
     """
     Pydantic model for the request body.
@@ -45,6 +54,7 @@ async def read_root():
 
 
 @app.post("/api/recipe-generate")
+@limiter.limit("2/minute") 
 async def generate_recipe_endpoint(request: RecipeRequest):
     """
     Endpoint to generate text using the Gemini API.
@@ -66,6 +76,7 @@ async def generate_recipe_endpoint(request: RecipeRequest):
 
 
 @app.post("/api/generate-recipe")
+@limiter.limit("2/minute") 
 async def generate_recipe_endpoint(request: PromptRequest):
     """
     Endpoint to generate text using the Gemini API.
