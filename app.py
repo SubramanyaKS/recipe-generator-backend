@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
@@ -55,7 +55,7 @@ async def read_root():
 
 @app.post("/api/recipe-generate")
 @limiter.limit("2/minute") 
-async def generate_recipe_endpoint(request: RecipeRequest):
+async def generate_recipe_endpoint(req: RecipeRequest,request: Request):
     """
     Endpoint to generate text using the Gemini API.
 
@@ -66,8 +66,8 @@ async def generate_recipe_endpoint(request: RecipeRequest):
         response: A string containing the generated text.
     """
     try:
-        prompt =request.ingredients + "\n" + request.cuisine
-        print(f"Received ingredients: {request.ingredients}")
+        prompt =req.ingredients + "\n" + req.cuisine
+        print(f"Received ingredients: {req.ingredients}")
         response = geminiCall(prompt)
         print(f"Generated recipe: {response}"   )
         return {"recipe": response}
@@ -77,7 +77,7 @@ async def generate_recipe_endpoint(request: RecipeRequest):
 
 @app.post("/api/generate-recipe")
 @limiter.limit("2/minute") 
-async def generate_recipe_endpoint(request: PromptRequest):
+async def generate_recipe_endpoint(req: PromptRequest,request: Request):
     """
     Endpoint to generate text using the Gemini API.
 
@@ -88,7 +88,7 @@ async def generate_recipe_endpoint(request: PromptRequest):
         response: A string containing the generated text.
     """
     try:
-        response = geminiCall(request.prompt)
+        response = geminiCall(req.prompt)
         return {"recipe": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calling Gemini API: {e}")
