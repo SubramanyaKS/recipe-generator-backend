@@ -67,9 +67,7 @@ async def generate_recipe_endpoint(req: RecipeRequest,request: Request):
     """
     try:
         prompt =req.ingredients + "\n" + req.cuisine
-        print(f"Received ingredients: {req.ingredients}")
         response = geminiCall(prompt)
-        print(f"Generated recipe: {response}"   )
         return {"recipe": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calling Gemini API: {e}")
