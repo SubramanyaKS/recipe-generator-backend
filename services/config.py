@@ -30,5 +30,5 @@ api_instruct2="""You are a helpful chef assistant. Given ingredients and cuisine
 
 origins = [
     "http://localhost:5173",
-    "https://recipegen-ui.netlify.app/",
+    "https://recipegen-ui.netlify.app",
 ]
